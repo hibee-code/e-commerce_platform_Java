@@ -12,6 +12,8 @@ import java.util.UUID;
 
 public interface ProductRepository extends JpaRepository<Product, UUID> {
 
+    boolean existsBySku(String sku);
+
     @Query("""
         SELECT p FROM Product p
         WHERE p.deletedAt IS NULL AND p.active = true
