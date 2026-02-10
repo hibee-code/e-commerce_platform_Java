@@ -7,6 +7,7 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.WeakKeyException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -22,9 +23,24 @@ public class JwtService {
 
     public JwtService(
             @Value("${app.jwt.secret}") String secret,
-            @Value("${app.jwt.expirationMinutes}") long expMinutes
+            @Value("${app.jwt.expirationMinutes:1440}") long expMinutes
     ) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        // fail fast: clear error for misconfig
+        if (secret == null || secret.trim().length() < 32) {
+            throw new IllegalStateException(
+                    "JWT secret missing or too short (min 32 chars). Set APP_JWT_SECRET / app.jwt.secret."
+            );
+        }
+        if (expMinutes <= 0) {
+            throw new IllegalStateException("JWT expirationMinutes must be > 0");
+        }
+
+        try {
+            this.key = Keys.hmacShaKeyFor(secret.trim().getBytes(StandardCharsets.UTF_8));
+        } catch (WeakKeyException e) {
+            throw new IllegalStateException("JWT secret is too weak for HS256 (use 32+ chars).", e);
+        }
+
         this.expirationMs = expMinutes * 60_000L;
     }
 

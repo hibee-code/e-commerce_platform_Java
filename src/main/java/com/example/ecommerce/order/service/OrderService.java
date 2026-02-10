@@ -1,13 +1,13 @@
 package com.example.ecommerce.order.service;
 
 import com.example.ecommerce.cart.repository.CartRepository;
-import com.example.ecommerce.cart.repository.OrderRepository;
 import com.example.ecommerce.common.exception.BadRequestException;
 import com.example.ecommerce.common.exception.ConflictException;
 import com.example.ecommerce.common.exception.ResourceNotFoundException;
 import com.example.ecommerce.order.entity.Order;
 import com.example.ecommerce.order.entity.OrderItem;
 import com.example.ecommerce.order.entity.OrderStatus;
+import com.example.ecommerce.order.repository.OrderRepository;
 import com.example.ecommerce.payment.entity.Payment;
 import com.example.ecommerce.payment.entity.PaymentProvider;
 import com.example.ecommerce.payment.entity.PaymentStatus;
