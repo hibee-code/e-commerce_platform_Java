@@ -7,7 +7,6 @@ import com.example.ecommerce.Auth.dto.RegisterRequest;
 import com.example.ecommerce.cart.entity.Cart;
 import com.example.ecommerce.common.exception.BadRequestException;
 import com.example.ecommerce.common.exception.ConflictException;
-import com.example.ecommerce.user.entity.Role;
 import com.example.ecommerce.user.entity.RoleName;
 import com.example.ecommerce.user.entity.User;
 import com.example.ecommerce.user.repository.RoleRepository;
@@ -32,8 +31,8 @@ public class AuthService {
             throw new ConflictException("Email already exists");
         }
 
-        var roleUser = roleRepository.findByName(RoleName.ROLE_USER)
-                .orElseGet(() -> roleRepository.save(Role.builder().name(RoleName.ROLE_USER).build()));
+        var role = roleRepository.findByName(req.getRole())
+                .orElseThrow(() -> new BadRequestException("Role not found"));
 
         var user = User.builder()
                 .fullName(req.getFullName())
@@ -42,23 +41,30 @@ public class AuthService {
                 .enabled(true)
                 .build();
 
-        user.getRoles().add(roleUser);
+        user.getRoles().add(role);
 
         // create empty cart automatically
         var cart = Cart.builder().user(user).build();
         user.setCart(cart);
 
         var saved = userRepository.save(user);
-        return new AuthResponse(jwtService.generate(saved));
+        return new AuthResponse(jwtService.generate(saved, role.getName()));
     }
 
     public AuthResponse login(LoginRequest req) {
-        var user = userRepository.findByEmail(req.getEmail())
+        var user = userRepository.findByEmailWithRoles(req.getEmail())
                 .orElseThrow(() -> new BadRequestException("Invalid credentials"));
 
         if (!encoder.matches(req.getPassword(), user.getPasswordHash())) {
             throw new BadRequestException("Invalid credentials");
         }
-        return new AuthResponse(jwtService.generate(user));
+
+        RoleName role = req.getRole();
+        boolean hasRole = user.getRoles().stream().anyMatch(r -> r.getName() == role);
+        if (!hasRole) {
+            throw new BadRequestException("Role not assigned");
+        }
+
+        return new AuthResponse(jwtService.generate(user, role));
     }
 }

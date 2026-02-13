@@ -1,13 +1,17 @@
 package com.example.ecommerce.order.controller;
 
 
-import com.example.ecommerce.Auth.security.AuthUser;
+import com.example.ecommerce.Auth.security.AuthPrincipal;
 import com.example.ecommerce.common.api.ApiResponse;
 import com.example.ecommerce.order.dto.OrderResponse;
 import com.example.ecommerce.order.dto.OrderSummaryResponse;
-import com.example.ecommerce.order.entity.Order;
 import com.example.ecommerce.order.service.OrderQueryService;
 import com.example.ecommerce.order.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,34 +25,53 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
+@Tag(name = "Orders", description = "Order checkout and history")
+@SecurityRequirement(name = "bearerAuth")
 public class OrderController {
 
     private final OrderService orderService;         // checkout
     private final OrderQueryService orderQueryService; // list/details
 
     @PostMapping("/checkout")
-    public ApiResponse<OrderResponse> checkout(@AuthenticationPrincipal AuthUser user) {
-        var order = orderService.checkout(user.getDomainUser().getId());
+    @Operation(summary = "Checkout current cart and create an order")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Checkout created"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
+    })
+    public ApiResponse<OrderResponse> checkout(@Parameter(hidden = true) @AuthenticationPrincipal AuthPrincipal principal) {
+        var order = orderService.checkout(principal.getUserId());
         // OrderService currently returns Order entity; map to DTO via query for detail
         // Faster: create a mapper in OrderService; simplest: return detail by ID
-        var dto = orderQueryService.detailsForUser(user.getDomainUser().getId(), order.getId());
+        var dto = orderQueryService.detailsForUser(principal.getUserId(), order.getId());
         return ApiResponse.ok("Checkout created", dto);
     }
 
     @GetMapping
+    @Operation(summary = "List orders for current user")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Orders returned")
+    })
     public ApiResponse<Page<OrderSummaryResponse>> list(
-            @AuthenticationPrincipal AuthUser user,
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthPrincipal principal,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(parseSort(sort)));
-        return ApiResponse.ok("Orders", orderQueryService.listForUser(user.getDomainUser().getId(), pageable));
+        return ApiResponse.ok("Orders", orderQueryService.listForUser(principal.getUserId(), pageable));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<OrderResponse> details(@AuthenticationPrincipal AuthUser user, @PathVariable UUID id) {
-        return ApiResponse.ok("Order", orderQueryService.detailsForUser(user.getDomainUser().getId(), id));
+    @Operation(summary = "Get order details by ID")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Order returned"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    public ApiResponse<OrderResponse> details(
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthPrincipal principal,
+            @PathVariable UUID id
+    ) {
+        return ApiResponse.ok("Order", orderQueryService.detailsForUser(principal.getUserId(), id));
     }
 
     private Sort.Order parseSort(String sort) {

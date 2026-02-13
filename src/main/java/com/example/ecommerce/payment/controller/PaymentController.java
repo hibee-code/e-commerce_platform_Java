@@ -4,6 +4,10 @@ package com.example.ecommerce.payment.controller;
 import com.example.ecommerce.common.api.ApiResponse;
 import com.example.ecommerce.payment.entity.Payment;
 import com.example.ecommerce.payment.service.PaymentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,11 +17,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
+@Tag(name = "Payments", description = "Payment confirmation")
+@SecurityRequirement(name = "bearerAuth")
 public class PaymentController {
 
     private final PaymentService paymentService;
 
     @PostMapping("/confirm")
+    @Operation(summary = "Confirm a payment")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Payment processed"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Payment not found")
+    })
     public ApiResponse<Payment> confirm(@RequestParam String reference, @RequestParam boolean success) {
         return ApiResponse.ok("Payment processed", paymentService.confirm(reference, success));
     }

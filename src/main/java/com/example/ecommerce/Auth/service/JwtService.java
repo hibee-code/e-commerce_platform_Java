@@ -1,6 +1,7 @@
 package com.example.ecommerce.Auth.service;
 
 
+import com.example.ecommerce.user.entity.RoleName;
 import com.example.ecommerce.user.entity.User;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class JwtService {
@@ -44,20 +46,32 @@ public class JwtService {
         this.expirationMs = expMinutes * 60_000L;
     }
 
-    public String generate(User user) {
+    public String generate(User user, RoleName role) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
-                .setSubject(user.getEmail())
+                .setSubject(user.getId().toString())
+                .claim("email", user.getEmail())
+                .claim("role", role.name())
                 .setIssuedAt(now)
                 .setExpiration(exp)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    public UUID extractUserId(String token) {
+        String subject = parser().parseClaimsJws(token).getBody().getSubject();
+        return UUID.fromString(subject);
+    }
+
     public String extractEmail(String token) {
-        return parser().parseClaimsJws(token).getBody().getSubject();
+        return parser().parseClaimsJws(token).getBody().get("email", String.class);
+    }
+
+    public RoleName extractRole(String token) {
+        String role = parser().parseClaimsJws(token).getBody().get("role", String.class);
+        return RoleName.valueOf(role);
     }
 
     public boolean isValid(String token) {

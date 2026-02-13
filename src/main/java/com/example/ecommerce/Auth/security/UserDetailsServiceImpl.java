@@ -15,7 +15,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        var user = userRepository.findByEmail(email)
+        var user = userRepository.findByEmailWithRoles(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Invalid credentials"));
         return AuthUser.from(user);
     }
