@@ -31,7 +31,7 @@ public class AuthService {
             throw new ConflictException("Email already exists");
         }
 
-        var role = roleRepository.findByName(req.getRole())
+        var role = roleRepository.findByName(RoleName.ROLE_USER)
                 .orElseThrow(() -> new BadRequestException("Role not found"));
 
         var user = User.builder()

@@ -12,8 +12,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -23,6 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = "Cart", description = "Shopping cart operations")
 @SecurityRequirement(name = "bearerAuth")
+@Validated
 public class CartController {
     private final CartService cartService;
     private final CartMapper cartMapper;
@@ -61,7 +64,7 @@ public class CartController {
     public ApiResponse<CartResponse> updateQty(
             @Parameter(hidden = true) @AuthenticationPrincipal AuthPrincipal principal,
             @PathVariable UUID itemId,
-            @RequestParam int qty
+            @RequestParam @Min(1) int qty
     ) {
         var cart = cartService.updateQty(principal.getUserId(), itemId, qty);
         return ApiResponse.ok("Quantity updated", cartMapper.toResponse(cart));

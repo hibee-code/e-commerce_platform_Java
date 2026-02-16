@@ -4,6 +4,7 @@ import com.example.ecommerce.catalog.category.repository.CategoryRepository;
 import com.example.ecommerce.catalog.product.dto.*;
 import com.example.ecommerce.catalog.product.entity.Product;
 import com.example.ecommerce.catalog.product.repository.ProductRepository;
+import com.example.ecommerce.common.exception.BadRequestException;
 import com.example.ecommerce.common.exception.ConflictException;
 import com.example.ecommerce.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,15 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public Page<ProductResponse> search(UUID categoryId, String q, BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+        if (minPrice != null && minPrice.signum() < 0) {
+            throw new BadRequestException("minPrice must be >= 0");
+        }
+        if (maxPrice != null && maxPrice.signum() < 0) {
+            throw new BadRequestException("maxPrice must be >= 0");
+        }
+        if (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0) {
+            throw new BadRequestException("minPrice cannot be greater than maxPrice");
+        }
         return productRepository.search(categoryId, q, minPrice, maxPrice, pageable).map(this::toResponse);
     }
 

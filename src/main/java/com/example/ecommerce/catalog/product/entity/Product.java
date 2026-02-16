@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 
 @Entity
 @Table(name = "products",
@@ -37,9 +36,6 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private Integer stockQuantity;
 
-    @Column
-    private Instant deletedAt;
-
     @Version
     @Column(nullable = false)
     private long version;
@@ -54,13 +50,6 @@ public class Product extends BaseEntity {
     private Category category;
 
     public boolean isDeleted() {
-        return deletedAt != null;
+        return getDeletedAt() != null;
+    }
 }
-}
-
-
-
-
-
-// Soft delete (keep active too if you already have it)
-
