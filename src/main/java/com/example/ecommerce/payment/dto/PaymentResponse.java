@@ -17,5 +17,7 @@ public class PaymentResponse {
     private String status;
     private String provider;
     private BigDecimal amount;
+    private String authorizationUrl;
+    private String accessCode;
     private String failureReason;
 }

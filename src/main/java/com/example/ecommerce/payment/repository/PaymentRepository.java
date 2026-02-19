@@ -15,4 +15,15 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
         WHERE p.reference = :reference
     """)
     Optional<Payment> findByReference(@Param("reference") String reference);
+
+    @Query("""
+        SELECT p FROM Payment p
+        JOIN FETCH p.order o
+        JOIN o.user u
+        WHERE p.reference = :reference AND u.id = :userId
+    """)
+    Optional<Payment> findByReferenceForUser(
+            @Param("reference") String reference,
+            @Param("userId") UUID userId
+    );
 }

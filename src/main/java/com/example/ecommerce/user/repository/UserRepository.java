@@ -2,6 +2,7 @@ package com.example.ecommerce.user.repository;
 
 
 import com.example.ecommerce.user.entity.User;
+import com.example.ecommerce.user.entity.RoleName;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,4 +16,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("select u from User u left join fetch u.roles where u.email = :email")
     Optional<User> findByEmailWithRoles(@Param("email") String email);
+
+    @Query("""
+        select count(u) > 0
+        from User u
+        join u.roles r
+        where r.name = :role
+    """)
+    boolean existsByRole(@Param("role") RoleName role);
 }

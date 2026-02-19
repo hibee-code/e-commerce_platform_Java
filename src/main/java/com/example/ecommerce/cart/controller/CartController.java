@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,11 +22,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/cart")
+@RequestMapping("/api/v1/user/cart")
 @RequiredArgsConstructor
 @Tag(name = "Cart", description = "Shopping cart operations")
 @SecurityRequirement(name = "bearerAuth")
 @Validated
+@PreAuthorize("hasRole('USER')")
 public class CartController {
     private final CartService cartService;
     private final CartMapper cartMapper;

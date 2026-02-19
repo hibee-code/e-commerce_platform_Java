@@ -85,7 +85,7 @@ public class OrderService {
         // Create payment record
         var payment = Payment.builder()
                 .order(savedOrder)
-                .provider(PaymentProvider.SIMULATED)
+                .provider(PaymentProvider.PAYSTACK)
                 .status(PaymentStatus.PENDING)
                 .reference("PAY-" + UUID.randomUUID())
                 .amount(savedOrder.getTotalAmount())

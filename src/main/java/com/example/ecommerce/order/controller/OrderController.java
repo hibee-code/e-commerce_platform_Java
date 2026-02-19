@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -28,11 +29,12 @@ import java.util.UUID;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/v1/orders")
+@RequestMapping("/api/v1/user/orders")
 @RequiredArgsConstructor
 @Tag(name = "Orders", description = "Order checkout and history")
 @SecurityRequirement(name = "bearerAuth")
 @Validated
+@PreAuthorize("hasRole('USER')")
 public class OrderController {
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("createdAt", "status", "totalAmount");

@@ -40,6 +40,12 @@ public class Payment extends BaseEntity {
     private BigDecimal amount;
 
     @Column(length = 500)
+    private String authorizationUrl;
+
+    @Column(length = 120)
+    private String accessCode;
+
+    @Column(length = 500)
     private String failureReason;
 
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

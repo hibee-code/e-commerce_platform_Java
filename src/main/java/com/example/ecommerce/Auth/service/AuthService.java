@@ -4,7 +4,6 @@ package com.example.ecommerce.Auth.service;
 import com.example.ecommerce.Auth.dto.AuthResponse;
 import com.example.ecommerce.Auth.dto.LoginRequest;
 import com.example.ecommerce.Auth.dto.RegisterRequest;
-import com.example.ecommerce.cart.entity.Cart;
 import com.example.ecommerce.common.exception.BadRequestException;
 import com.example.ecommerce.common.exception.ConflictException;
 import com.example.ecommerce.user.entity.RoleName;
@@ -31,7 +30,8 @@ public class AuthService {
             throw new ConflictException("Email already exists");
         }
 
-        var role = roleRepository.findByName(RoleName.ROLE_USER)
+        RoleName requestedRole = req.getRole();
+        var role = roleRepository.findByName(requestedRole)
                 .orElseThrow(() -> new BadRequestException("Role not found"));
 
         var user = User.builder()
@@ -42,10 +42,6 @@ public class AuthService {
                 .build();
 
         user.getRoles().add(role);
-
-        // create empty cart automatically
-        var cart = Cart.builder().user(user).build();
-        user.setCart(cart);
 
         var saved = userRepository.save(user);
         return new AuthResponse(jwtService.generate(saved, role.getName()));
@@ -66,5 +62,32 @@ public class AuthService {
         }
 
         return new AuthResponse(jwtService.generate(user, role));
+    }
+
+    @Transactional
+    public AuthResponse registerFirstAdmin(RegisterRequest req) {
+        if (req.getRole() != RoleName.ROLE_ADMIN) {
+            throw new BadRequestException("Role must be ROLE_ADMIN for setup");
+        }
+        if (userRepository.existsByRole(RoleName.ROLE_ADMIN)) {
+            throw new ConflictException("Admin already exists");
+        }
+        if (userRepository.existsByEmail(req.getEmail())) {
+            throw new ConflictException("Email already exists");
+        }
+
+        var role = roleRepository.findByName(RoleName.ROLE_ADMIN)
+                .orElseThrow(() -> new BadRequestException("Role not found"));
+
+        var user = User.builder()
+                .fullName(req.getFullName())
+                .email(req.getEmail())
+                .passwordHash(encoder.encode(req.getPassword()))
+                .enabled(true)
+                .build();
+
+        user.getRoles().add(role);
+        var saved = userRepository.save(user);
+        return new AuthResponse(jwtService.generate(saved, role.getName()));
     }
 }

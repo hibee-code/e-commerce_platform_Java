@@ -1,0 +1,5 @@
+ALTER TABLE payments
+    ADD COLUMN IF NOT EXISTS authorization_url VARCHAR(500);
+
+ALTER TABLE payments
+    ADD COLUMN IF NOT EXISTS access_code VARCHAR(120);

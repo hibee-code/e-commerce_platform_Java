@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -24,11 +23,12 @@ import java.util.Set;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/products")
+@RequestMapping("/api/v1/user/products")
 @RequiredArgsConstructor
 @Tag(name = "Products", description = "Product catalog")
 @SecurityRequirement(name = "bearerAuth")
 @Validated
+@PreAuthorize("hasRole('USER')")
 public class ProductController {
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("createdAt", "price", "name");
@@ -62,44 +62,6 @@ public class ProductController {
     })
     public ApiResponse<ProductResponse> get(@PathVariable UUID id) {
         return ApiResponse.ok("Product", productService.get(id));
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
-    @Operation(summary = "Create a product")
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Product created"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden")
-    })
-    public ApiResponse<ProductResponse> create(@Valid @RequestBody ProductCreateRequest req) {
-        return ApiResponse.ok("Product created", productService.create(req));
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}")
-    @Operation(summary = "Update a product")
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Product updated"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Product not found")
-    })
-    public ApiResponse<ProductResponse> update(@PathVariable UUID id, @Valid @RequestBody ProductUpdateRequest req) {
-        return ApiResponse.ok("Product updated", productService.update(id, req));
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a product")
-    @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Product deleted"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Product not found")
-    })
-    public ApiResponse<Void> delete(@PathVariable UUID id) {
-        productService.softDelete(id);
-        return ApiResponse.ok("Product deleted", null);
     }
 
     private Sort.Order parseSort(String sort) {
