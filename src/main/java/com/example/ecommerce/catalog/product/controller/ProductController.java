@@ -3,7 +3,7 @@ package com.example.ecommerce.catalog.product.controller;
 import com.example.ecommerce.catalog.product.dto.*;
 import com.example.ecommerce.catalog.product.service.ProductService;
 import com.example.ecommerce.common.api.ApiResponse;
-import com.example.ecommerce.common.exception.BadRequestException;
+import com.example.ecommerce.common.util.SortUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -50,7 +50,7 @@ public class ProductController {
             @Parameter(description = "Sort format: field,dir (e.g. createdAt,desc)")
             @RequestParam(defaultValue = "createdAt,desc") String sort
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(parseSort(sort)));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(SortUtils.parseSort(sort, ALLOWED_SORT_FIELDS)));
         return ApiResponse.ok("Products", productService.search(categoryId, q, minPrice, maxPrice, pageable));
     }
 
@@ -64,18 +64,4 @@ public class ProductController {
         return ApiResponse.ok("Product", productService.get(id));
     }
 
-    private Sort.Order parseSort(String sort) {
-        // supports: "price,asc" or "createdAt,desc"
-        if (sort == null || sort.isBlank()) {
-            throw new BadRequestException("Sort is required");
-        }
-        String[] parts = sort.split(",");
-        String property = parts[0].trim();
-        if (!ALLOWED_SORT_FIELDS.contains(property)) {
-            throw new BadRequestException("Invalid sort field: " + property);
-        }
-        Sort.Direction direction = (parts.length > 1 && parts[1].equalsIgnoreCase("asc"))
-                ? Sort.Direction.ASC : Sort.Direction.DESC;
-        return new Sort.Order(direction, property);
-    }
 }

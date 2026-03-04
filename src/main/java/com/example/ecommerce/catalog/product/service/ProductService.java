@@ -41,7 +41,9 @@ public class ProductService {
     public ProductResponse get(UUID id) {
         var p = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        if (p.getDeletedAt() != null) throw new ResourceNotFoundException("Product not found");
+        if (p.isDeleted()) {
+            throw new ResourceNotFoundException("Product not found");
+        }
         return toResponse(p);
     }
 

@@ -1,0 +1,11 @@
+.git
+.idea
+# Build output
+/target
+**/target
+
+# Env files
+.env
+
+# OS files
+.DS_Store

@@ -5,6 +5,7 @@ import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.Profiles;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -22,6 +23,13 @@ public class DotenvEnvironmentPostProcessor implements EnvironmentPostProcessor,
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        Boolean enabled = environment.getProperty("app.dotenv.enabled", Boolean.class, false);
+        if (enabled == null || !enabled) {
+            return;
+        }
+        if (environment.acceptsProfiles(Profiles.of("prod", "production"))) {
+            return;
+        }
         if (environment.getPropertySources().contains(PROPERTY_SOURCE_NAME)) {
             return;
         }

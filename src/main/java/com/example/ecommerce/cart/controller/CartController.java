@@ -1,6 +1,6 @@
 package com.example.ecommerce.cart.controller;
 
-import com.example.ecommerce.Auth.security.AuthPrincipal;
+import com.example.ecommerce.auth.security.AuthPrincipal;
 import com.example.ecommerce.cart.dto.AddToCartRequest;
 import com.example.ecommerce.cart.dto.CartResponse;
 import com.example.ecommerce.cart.service.CartMapper;

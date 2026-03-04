@@ -1,11 +1,12 @@
 package com.example.ecommerce.payment.controller;
 
 
-import com.example.ecommerce.Auth.security.AuthPrincipal;
+import com.example.ecommerce.auth.security.AuthPrincipal;
 import com.example.ecommerce.common.api.ApiResponse;
 import com.example.ecommerce.payment.dto.PaymentInitializeRequest;
 import com.example.ecommerce.payment.dto.PaymentResponse;
 import com.example.ecommerce.payment.entity.Payment;
+import com.example.ecommerce.payment.service.PaymentMapper;
 import com.example.ecommerce.payment.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final PaymentMapper paymentMapper;
 
     @PostMapping("/initialize")
     @Operation(summary = "Initialize a Paystack payment")
@@ -42,7 +44,7 @@ public class PaymentController {
             @Valid @RequestBody PaymentInitializeRequest request
     ) {
         Payment payment = paymentService.initializeForOrder(principal.getUserId(), request.getOrderId());
-        return ApiResponse.ok("Payment initialized", toResponse(payment));
+        return ApiResponse.ok("Payment initialized", paymentMapper.toResponse(payment));
     }
 
     @GetMapping("/verify")
@@ -57,20 +59,6 @@ public class PaymentController {
             @RequestParam @NotBlank String reference
     ) {
         Payment payment = paymentService.verifyForUser(principal.getUserId(), reference);
-        return ApiResponse.ok("Payment verified", toResponse(payment));
-    }
-
-    private PaymentResponse toResponse(Payment payment) {
-        return PaymentResponse.builder()
-                .id(payment.getId())
-                .orderId(payment.getOrder().getId())
-                .reference(payment.getReference())
-                .status(payment.getStatus().name())
-                .provider(payment.getProvider().name())
-                .amount(payment.getAmount())
-                .authorizationUrl(payment.getAuthorizationUrl())
-                .accessCode(payment.getAccessCode())
-                .failureReason(payment.getFailureReason())
-                .build();
+        return ApiResponse.ok("Payment verified", paymentMapper.toResponse(payment));
     }
 }

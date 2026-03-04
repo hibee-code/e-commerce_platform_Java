@@ -4,6 +4,7 @@ import com.example.ecommerce.cart.repository.CartRepository;
 import com.example.ecommerce.common.exception.BadRequestException;
 import com.example.ecommerce.common.exception.ConflictException;
 import com.example.ecommerce.common.exception.ResourceNotFoundException;
+import com.example.ecommerce.order.dto.OrderResponse;
 import com.example.ecommerce.order.entity.Order;
 import com.example.ecommerce.order.entity.OrderItem;
 import com.example.ecommerce.order.entity.OrderStatus;
@@ -26,9 +27,10 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
+    private final OrderMapper orderMapper;
 
     @Transactional
-    public Order checkout(UUID userId) {
+    public OrderResponse checkout(UUID userId) {
         var cart = cartRepository.findByUserIdWithItems(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
@@ -48,7 +50,7 @@ public class OrderService {
         for (var ci : cart.getItems()) {
             var p = ci.getProduct();
 
-            if (p.getDeletedAt() != null || !p.isActive()) {
+            if (p.isDeleted() || !p.isActive()) {
                 throw new BadRequestException("Product not available: " + p.getName());
             }
             if (p.getStockQuantity() < ci.getQuantity()) {
@@ -94,6 +96,6 @@ public class OrderService {
         paymentRepository.save(payment);
         savedOrder.setPayment(payment);
 
-        return savedOrder;
+        return orderMapper.toResponse(savedOrder);
     }
 }

@@ -1,8 +1,7 @@
 package com.example.ecommerce.catalog.category.controller;
 
-import com.example.ecommerce.catalog.category.dto.CategoryCreateRequest;
 import com.example.ecommerce.catalog.category.dto.CategoryResponse;
-import com.example.ecommerce.catalog.category.dto.CategoryUpdateRequest;
+import com.example.ecommerce.catalog.category.dto.CategoryUpsertRequest;
 import com.example.ecommerce.catalog.category.service.CategoryService;
 import com.example.ecommerce.common.api.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +32,7 @@ public class AdminCategoryController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden")
     })
-    public ApiResponse<CategoryResponse> create(@Valid @RequestBody CategoryCreateRequest req) {
+    public ApiResponse<CategoryResponse> create(@Valid @RequestBody CategoryUpsertRequest req) {
         return ApiResponse.ok("Category created", categoryService.create(req));
     }
 
@@ -45,7 +44,7 @@ public class AdminCategoryController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Forbidden"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Category not found")
     })
-    public ApiResponse<CategoryResponse> update(@PathVariable UUID id, @Valid @RequestBody CategoryUpdateRequest req) {
+    public ApiResponse<CategoryResponse> update(@PathVariable UUID id, @Valid @RequestBody CategoryUpsertRequest req) {
         return ApiResponse.ok("Category updated", categoryService.update(id, req));
     }
 

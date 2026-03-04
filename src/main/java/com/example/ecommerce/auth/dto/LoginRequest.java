@@ -1,4 +1,4 @@
-package com.example.ecommerce.Auth.dto;
+package com.example.ecommerce.auth.dto;
 
 import com.example.ecommerce.user.entity.RoleName;
 import jakarta.validation.constraints.*;

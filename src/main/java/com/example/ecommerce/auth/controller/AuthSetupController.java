@@ -1,8 +1,8 @@
-package com.example.ecommerce.Auth.controller;
+package com.example.ecommerce.auth.controller;
 
-import com.example.ecommerce.Auth.dto.AuthResponse;
-import com.example.ecommerce.Auth.dto.RegisterRequest;
-import com.example.ecommerce.Auth.service.AuthService;
+import com.example.ecommerce.auth.dto.AuthResponse;
+import com.example.ecommerce.auth.dto.RegisterRequest;
+import com.example.ecommerce.auth.service.AuthService;
 import com.example.ecommerce.common.api.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

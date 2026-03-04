@@ -1,9 +1,9 @@
 package com.example.ecommerce.order.controller;
 
 
-import com.example.ecommerce.Auth.security.AuthPrincipal;
+import com.example.ecommerce.auth.security.AuthPrincipal;
 import com.example.ecommerce.common.api.ApiResponse;
-import com.example.ecommerce.common.exception.BadRequestException;
+import com.example.ecommerce.common.util.SortUtils;
 import com.example.ecommerce.order.dto.OrderResponse;
 import com.example.ecommerce.order.dto.OrderSummaryResponse;
 import com.example.ecommerce.order.service.OrderQueryService;
@@ -49,10 +49,7 @@ public class OrderController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request")
     })
     public ApiResponse<OrderResponse> checkout(@Parameter(hidden = true) @AuthenticationPrincipal AuthPrincipal principal) {
-        var order = orderService.checkout(principal.getUserId());
-        // OrderService currently returns Order entity; map to DTO via query for detail
-        // Faster: create a mapper in OrderService; simplest: return detail by ID
-        var dto = orderQueryService.detailsForUser(principal.getUserId(), order.getId());
+        var dto = orderService.checkout(principal.getUserId());
         return ApiResponse.ok("Checkout created", dto);
     }
 
@@ -67,7 +64,7 @@ public class OrderController {
             @RequestParam(defaultValue = "20") @Min(1) @Max(200) int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(parseSort(sort)));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(SortUtils.parseSort(sort, ALLOWED_SORT_FIELDS)));
         return ApiResponse.ok("Orders", orderQueryService.listForUser(principal.getUserId(), pageable));
     }
 
@@ -84,17 +81,4 @@ public class OrderController {
         return ApiResponse.ok("Order", orderQueryService.detailsForUser(principal.getUserId(), id));
     }
 
-    private Sort.Order parseSort(String sort) {
-        if (sort == null || sort.isBlank()) {
-            throw new BadRequestException("Sort is required");
-        }
-        String[] parts = sort.split(",");
-        String property = parts[0].trim();
-        if (!ALLOWED_SORT_FIELDS.contains(property)) {
-            throw new BadRequestException("Invalid sort field: " + property);
-        }
-        Sort.Direction direction = (parts.length > 1 && parts[1].equalsIgnoreCase("asc"))
-                ? Sort.Direction.ASC : Sort.Direction.DESC;
-        return new Sort.Order(direction, property);
-    }
 }

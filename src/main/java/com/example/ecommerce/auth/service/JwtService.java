@@ -1,4 +1,4 @@
-package com.example.ecommerce.Auth.service;
+package com.example.ecommerce.auth.service;
 
 
 import com.example.ecommerce.user.entity.RoleName;

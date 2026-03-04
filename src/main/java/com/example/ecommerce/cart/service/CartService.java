@@ -34,7 +34,7 @@ public class CartService {
         var product = productRepository.findById(req.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        if (!product.isActive() || product.getDeletedAt() != null) {
+        if (!product.isActive() || product.isDeleted()) {
             throw new BadRequestException("Product not available");
         }
 
@@ -77,7 +77,10 @@ public class CartService {
         var cart = cartRepository.findByUserIdWithItems(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
-        cart.getItems().removeIf(i -> i.getId().equals(cartItemId));
+        boolean removed = cart.getItems().removeIf(i -> i.getId().equals(cartItemId));
+        if (!removed) {
+            throw new ResourceNotFoundException("Cart item not found");
+        }
         return cartRepository.save(cart);
     }
 

@@ -29,7 +29,7 @@ public class CategoryService {
     }
 
     @Transactional
-    public CategoryResponse create(CategoryCreateRequest req) {
+    public CategoryResponse create(CategoryUpsertRequest req) {
         if (categoryRepository.existsBySlug(req.getSlug())) {
             throw new ConflictException("Category slug already exists");
         }
@@ -42,12 +42,11 @@ public class CategoryService {
     }
 
     @Transactional
-    public CategoryResponse update(UUID id, CategoryUpdateRequest req) {
+    public CategoryResponse update(UUID id, CategoryUpsertRequest req) {
         var c = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-        // if slug changes, ensure unique
-        if (!c.getSlug().equals(req.getSlug()) && categoryRepository.existsBySlug(req.getSlug())) {
+        if (categoryRepository.existsBySlugAndIdNot(req.getSlug(), c.getId())) {
             throw new ConflictException("Category slug already exists");
         }
 
